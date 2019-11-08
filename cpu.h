@@ -13,8 +13,10 @@ enum
 {
   F,
   DRF,
-  EX,
-  MEM,
+  EX1,
+  EX2,
+  MEM1,
+  MEM2,
   WB,
   NUM_STAGES
 };
@@ -93,10 +95,16 @@ int
 decode(APEX_CPU* cpu);
 
 int
-execute(APEX_CPU* cpu);
+execute1(APEX_CPU* cpu);
 
 int
-memory(APEX_CPU* cpu);
+execute2(APEX_CPU* cpu);
+
+int
+memory1(APEX_CPU* cpu);
+
+int
+memory2(APEX_CPU* cpu);
 
 int
 writeback(APEX_CPU* cpu);

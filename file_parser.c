@@ -53,12 +53,22 @@ create_APEX_instruction(APEX_Instruction* ins, char* buffer)
   if (strcmp(ins->opcode, "MOVC") == 0) {
     ins->rd = get_num_from_string(tokens[1]);
     ins->imm = get_num_from_string(tokens[2]);
+
+    printf("Literal to move is::%d \n",ins->imm);
+    printf("Rdest in move is::%d \n",ins->rd);
   }
 
   if (strcmp(ins->opcode, "STORE") == 0) {
     ins->rs1 = get_num_from_string(tokens[1]);
     ins->rs2 = get_num_from_string(tokens[2]);
     ins->imm = get_num_from_string(tokens[3]);
+  }
+
+  if(strcmp(ins->opcode, "ADD")==0)
+  {
+    ins->rs1=get_num_from_string(tokens[2]);
+    ins->imm = get_num_from_string(tokens[3]);
+    ins->rd= get_num_from_string(tokens[1]);
   }
 
 }

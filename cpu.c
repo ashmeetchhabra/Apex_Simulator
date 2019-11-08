@@ -109,6 +109,12 @@ print_instruction(CPU_Stage* stage)
   if (strcmp(stage->opcode, "MOVC") == 0) {
     printf("%s,R%d,#%d ", stage->opcode, stage->rd, stage->imm);
   }
+
+  if (strcmp(stage->opcode,"ADD")==0)
+  {
+    //printf("ADDED");
+    printf("%s,R%d,R%d,#%d",stage->opcode, stage->rd, stage->rs1, stage->imm);
+  }
 }
 
 /* Debug function which dumps the cpu stage
@@ -135,7 +141,7 @@ int
 fetch(APEX_CPU* cpu)
 {
   CPU_Stage* stage = &cpu->stage[F];
-  if (!stage->busy && !stage->stalled) {  
+  if (!stage->busy && !stage->stalled) {
     /* Store current PC in fetch latch */
     stage->pc = cpu->pc;
 
@@ -149,6 +155,8 @@ fetch(APEX_CPU* cpu)
     stage->rs2 = current_ins->rs2;
     stage->imm = current_ins->imm;
     stage->rd = current_ins->rd;
+
+    printf("In Fetch stage :: r1:: %d\n",stage->rs1);
 
     /* Update PC for next instruction */
     cpu->pc += 4;
@@ -181,10 +189,26 @@ decode(APEX_CPU* cpu)
 
     /* No Register file read needed for MOVC */
     if (strcmp(stage->opcode, "MOVC") == 0) {
+    //printf("Val of rd in decode stage:: %d \n",cpu->regs_valid[stage->rd]);
+    //stage->buffer = cpu->regs[stage->imm];
+    stage->buffer = stage->imm;
+
+
+    //cpu->regs_valid[stage->rd] = 1;
     }
 
+    if (strcmp(stage->opcode, "ADD") == 0) {
+
+
+
+    }
+
+// TODO (ashmeet#1#): TO Decode Add Instruction
+
+
+
     /* Copy data from decode latch to execute latch*/
-    cpu->stage[EX] = cpu->stage[DRF];
+    cpu->stage[EX1] = cpu->stage[DRF];
 
     if (ENABLE_DEBUG_MESSAGES) {
       print_stage_content("Decode/RF", stage);
@@ -200,9 +224,9 @@ decode(APEX_CPU* cpu)
  * 				 implementation
  */
 int
-execute(APEX_CPU* cpu)
+execute1(APEX_CPU* cpu)
 {
-  CPU_Stage* stage = &cpu->stage[EX];
+  CPU_Stage* stage = &cpu->stage[EX1];
   if (!stage->busy && !stage->stalled) {
 
     /* Store */
@@ -213,14 +237,32 @@ execute(APEX_CPU* cpu)
     if (strcmp(stage->opcode, "MOVC") == 0) {
     }
 
+
+/* TODO (ashmeet#1#): To Execute ADD Instruction
+ */
+
+
     /* Copy data from Execute latch to Memory latch*/
-    cpu->stage[MEM] = cpu->stage[EX];
+    cpu->stage[EX2] = cpu->stage[EX1];
 
     if (ENABLE_DEBUG_MESSAGES) {
-      print_stage_content("Execute", stage);
+      print_stage_content("Execute1", stage);
     }
   }
   return 0;
+}
+
+int
+execute2(APEX_CPU* cpu)
+{
+    CPU_Stage* stage = &cpu->stage[EX2];
+    if (!stage->busy && !stage->stalled) {
+        cpu->stage[MEM1] = cpu->stage[EX2];
+        if (ENABLE_DEBUG_MESSAGES) {
+            print_stage_content("Execute2", stage);
+        }
+    }
+    return 0;
 }
 
 /*
@@ -230,9 +272,9 @@ execute(APEX_CPU* cpu)
  * 				 implementation
  */
 int
-memory(APEX_CPU* cpu)
+memory1(APEX_CPU* cpu)
 {
-  CPU_Stage* stage = &cpu->stage[MEM];
+  CPU_Stage* stage = &cpu->stage[MEM1];
   if (!stage->busy && !stage->stalled) {
 
     /* Store */
@@ -244,13 +286,25 @@ memory(APEX_CPU* cpu)
     }
 
     /* Copy data from decode latch to execute latch*/
-    cpu->stage[WB] = cpu->stage[MEM];
+    cpu->stage[MEM2] = cpu->stage[MEM1];
 
     if (ENABLE_DEBUG_MESSAGES) {
-      print_stage_content("Memory", stage);
+      print_stage_content("Memory1", stage);
     }
   }
   return 0;
+}
+int
+memory2(APEX_CPU* cpu)
+{
+    CPU_Stage* stage = &cpu->stage[MEM2];
+    if (!stage->busy && !stage->stalled) {
+        cpu->stage[WB] = cpu->stage[MEM2];
+        if (ENABLE_DEBUG_MESSAGES) {
+            print_stage_content("Memory2", stage);
+        }
+    }
+    return 0;
 }
 
 /*
@@ -267,8 +321,21 @@ writeback(APEX_CPU* cpu)
 
     /* Update register file */
     if (strcmp(stage->opcode, "MOVC") == 0) {
+
+    //cpu->regs[stage->rd] = stage->imm;
+
       cpu->regs[stage->rd] = stage->buffer;
+
+      printf("BUFFER::%d \n",stage->buffer);
+
+      printf("Write Back::MOV: %d\n",cpu->regs[stage->rd]);
     }
+
+
+/* TODO (ashmeet#1#): TO Write Back ADD Instruction */
+
+
+
 
     cpu->ins_completed++;
 
@@ -303,8 +370,10 @@ APEX_cpu_run(APEX_CPU* cpu)
     }
 
     writeback(cpu);
-    memory(cpu);
-    execute(cpu);
+    memory2(cpu);
+    memory1(cpu);
+    execute2(cpu);
+    execute1(cpu);
     decode(cpu);
     fetch(cpu);
     cpu->clock++;
