@@ -142,14 +142,28 @@ fetch(APEX_CPU* cpu)
 {
   CPU_Stage* stage = &cpu->stage[F];
   if (!stage->busy && !stage->stalled) {
+  printf("::::::::Test ERROR1::::::\n");
     /* Store current PC in fetch latch */
     stage->pc = cpu->pc;
+    printf("::::::::Test ERROR2::::::\n");
 
     /* Index into code memory using this pc and copy all instruction fields into
      * fetch latch
      */
     APEX_Instruction* current_ins = &cpu->code_memory[get_code_index(cpu->pc)];
+        printf("::::::::Test ERROR3::::::\n");
+
+        if(current_ins==0)
+            printf("ZERO");
+
+    printf("stage->BEFORE opcode is:: %s\n",current_ins->opcode);
+    printf("stage->BEFORE rd is:: %d\n",current_ins->rd);
+    printf("stage->BEFORE rs1 is:: %d\n",current_ins->rs1);
+    printf("stage->BEFORE rs2 is:: %d\n",current_ins->rs2);
+    printf("stage->BEFORE imm is:: %d\n",current_ins->imm);
     strcpy(stage->opcode, current_ins->opcode);
+    printf("::::::::Test ERROR4::::::\n");
+    printf("stage->AFTER opcode is:: %s\n",stage->opcode);
     stage->rd = current_ins->rd;
     stage->rs1 = current_ins->rs1;
     stage->rs2 = current_ins->rs2;
@@ -277,6 +291,8 @@ memory1(APEX_CPU* cpu)
   CPU_Stage* stage = &cpu->stage[MEM1];
   if (!stage->busy && !stage->stalled) {
 
+  printf("PRINTING...1\n");
+
     /* Store */
     if (strcmp(stage->opcode, "STORE") == 0) {
     }
@@ -286,26 +302,30 @@ memory1(APEX_CPU* cpu)
     }
 
     /* Copy data from decode latch to execute latch*/
-    cpu->stage[MEM2] = cpu->stage[MEM1];
+    cpu->stage[WB] = cpu->stage[MEM1];
+    printf("PRINTING...2\n");
 
     if (ENABLE_DEBUG_MESSAGES) {
+    printf("PRINTING...3\n");
       print_stage_content("Memory1", stage);
+      printf("PRINTING...4\n");
     }
   }
+  printf("PRINTING...5\n");
   return 0;
 }
-int
-memory2(APEX_CPU* cpu)
-{
-    CPU_Stage* stage = &cpu->stage[MEM2];
-    if (!stage->busy && !stage->stalled) {
-        cpu->stage[WB] = cpu->stage[MEM2];
-        if (ENABLE_DEBUG_MESSAGES) {
-            print_stage_content("Memory2", stage);
-        }
-    }
-    return 0;
-}
+//int
+//memory2(APEX_CPU* cpu)
+//{
+ //   CPU_Stage* stage = &cpu->stage[MEM2];
+//  if (!stage->busy && !stage->stalled) {
+//        cpu->stage[WB] = cpu->stage[MEM2];
+//        if (ENABLE_DEBUG_MESSAGES) {
+//            print_stage_content("Memory2", stage);
+//        }
+//    }
+//    return 0;
+//}
 
 /*
  *  Writeback Stage of APEX Pipeline
@@ -370,7 +390,7 @@ APEX_cpu_run(APEX_CPU* cpu)
     }
 
     writeback(cpu);
-    memory2(cpu);
+    //memory2(cpu);
     memory1(cpu);
     execute2(cpu);
     execute1(cpu);

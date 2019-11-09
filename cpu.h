@@ -16,7 +16,7 @@ enum
   EX1,
   EX2,
   MEM1,
-  MEM2,
+  //MEM2,
   WB,
   NUM_STAGES
 };
@@ -103,8 +103,8 @@ execute2(APEX_CPU* cpu);
 int
 memory1(APEX_CPU* cpu);
 
-int
-memory2(APEX_CPU* cpu);
+//int
+//memory2(APEX_CPU* cpu);
 
 int
 writeback(APEX_CPU* cpu);
