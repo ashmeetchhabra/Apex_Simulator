@@ -16,7 +16,7 @@ enum
   EX1,
   EX2,
   MEM1,
-  //MEM2,
+  MEM2,
   WB,
   NUM_STAGES
 };
@@ -46,6 +46,7 @@ typedef struct CPU_Stage
   int mem_address;	// Computed Memory Address
   int busy;		    // Flag to indicate, stage is performing some action
   int stalled;		// Flag to indicate, stage is stalled
+  int temp_add_result;  // to compute the result for add
 } CPU_Stage;
 
 /* Model of APEX CPU */
@@ -62,7 +63,7 @@ typedef struct APEX_CPU
   int regs_valid[32];
 
   /* Array of 5 CPU_stage */
-  CPU_Stage stage[5];
+  CPU_Stage stage[8];
 
   /* Code Memory where instructions are stored */
   APEX_Instruction* code_memory;

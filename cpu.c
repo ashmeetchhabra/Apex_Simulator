@@ -142,35 +142,20 @@ fetch(APEX_CPU* cpu)
 {
   CPU_Stage* stage = &cpu->stage[F];
   if (!stage->busy && !stage->stalled) {
-  printf("::::::::Test ERROR1::::::\n");
     /* Store current PC in fetch latch */
     stage->pc = cpu->pc;
-    printf("::::::::Test ERROR2::::::\n");
 
     /* Index into code memory using this pc and copy all instruction fields into
      * fetch latch
      */
     APEX_Instruction* current_ins = &cpu->code_memory[get_code_index(cpu->pc)];
-        printf("::::::::Test ERROR3::::::\n");
 
-        if(current_ins==0)
-            printf("ZERO");
-
-    printf("stage->BEFORE opcode is:: %s\n",current_ins->opcode);
-    printf("stage->BEFORE rd is:: %d\n",current_ins->rd);
-    printf("stage->BEFORE rs1 is:: %d\n",current_ins->rs1);
-    printf("stage->BEFORE rs2 is:: %d\n",current_ins->rs2);
-    printf("stage->BEFORE imm is:: %d\n",current_ins->imm);
     strcpy(stage->opcode, current_ins->opcode);
-    printf("::::::::Test ERROR4::::::\n");
-    printf("stage->AFTER opcode is:: %s\n",stage->opcode);
     stage->rd = current_ins->rd;
     stage->rs1 = current_ins->rs1;
     stage->rs2 = current_ins->rs2;
     stage->imm = current_ins->imm;
-    stage->rd = current_ins->rd;
-
-    printf("In Fetch stage :: r1:: %d\n",stage->rs1);
+    //stage->rd = current_ins->rd;
 
     /* Update PC for next instruction */
     cpu->pc += 4;
@@ -212,7 +197,13 @@ decode(APEX_CPU* cpu)
     }
 
     if (strcmp(stage->opcode, "ADD") == 0) {
-
+//    printf("In decode stage:: ADD:: \n");
+//    printf("Literal:: %d \n",stage->imm);
+//    printf("rd:: %d \n",stage->rd);
+//    printf("rs1:: %d \n",stage->rs1);
+//    printf("rs2:: %d \n",stage->rs2);
+//    printf("rs1_value:: %d \n",stage->rs1_value);
+//    printf("rs2_value:: %d \n",stage->rs2_value);
 
 
     }
@@ -251,6 +242,11 @@ execute1(APEX_CPU* cpu)
     if (strcmp(stage->opcode, "MOVC") == 0) {
     }
 
+    if (strcmp(stage->opcode, "ADD") == 0) {
+
+
+    }
+
 
 /* TODO (ashmeet#1#): To Execute ADD Instruction
  */
@@ -271,6 +267,10 @@ execute2(APEX_CPU* cpu)
 {
     CPU_Stage* stage = &cpu->stage[EX2];
     if (!stage->busy && !stage->stalled) {
+    if (strcmp(stage->opcode, "ADD") == 0) {
+
+    stage->temp_add_result=(stage->rs1+stage->imm);
+    }
         cpu->stage[MEM1] = cpu->stage[EX2];
         if (ENABLE_DEBUG_MESSAGES) {
             print_stage_content("Execute2", stage);
@@ -291,7 +291,7 @@ memory1(APEX_CPU* cpu)
   CPU_Stage* stage = &cpu->stage[MEM1];
   if (!stage->busy && !stage->stalled) {
 
-  printf("PRINTING...1\n");
+
 
     /* Store */
     if (strcmp(stage->opcode, "STORE") == 0) {
@@ -301,31 +301,44 @@ memory1(APEX_CPU* cpu)
     if (strcmp(stage->opcode, "MOVC") == 0) {
     }
 
+    if (strcmp(stage->opcode, "ADD") == 0) {
+    }
+
     /* Copy data from decode latch to execute latch*/
-    cpu->stage[WB] = cpu->stage[MEM1];
-    printf("PRINTING...2\n");
+    cpu->stage[MEM2] = cpu->stage[MEM1];
+
 
     if (ENABLE_DEBUG_MESSAGES) {
-    printf("PRINTING...3\n");
+
       print_stage_content("Memory1", stage);
-      printf("PRINTING...4\n");
+
     }
   }
-  printf("PRINTING...5\n");
+
   return 0;
 }
-//int
-//memory2(APEX_CPU* cpu)
-//{
- //   CPU_Stage* stage = &cpu->stage[MEM2];
-//  if (!stage->busy && !stage->stalled) {
-//        cpu->stage[WB] = cpu->stage[MEM2];
-//        if (ENABLE_DEBUG_MESSAGES) {
-//            print_stage_content("Memory2", stage);
-//        }
-//    }
-//    return 0;
-//}
+int
+memory2(APEX_CPU* cpu)
+{
+    CPU_Stage* stage = &cpu->stage[MEM2];
+  if (!stage->busy && !stage->stalled) {
+
+  if (strcmp(stage->opcode, "STORE") == 0) {
+    }
+
+    /* MOVC */
+    if (strcmp(stage->opcode, "MOVC") == 0) {
+    }
+
+    if (strcmp(stage->opcode, "ADD") == 0) {
+    }
+        cpu->stage[WB] = cpu->stage[MEM2];
+        if (ENABLE_DEBUG_MESSAGES) {
+            print_stage_content("Memory2", stage);
+        }
+    }
+    return 0;
+}
 
 /*
  *  Writeback Stage of APEX Pipeline
@@ -351,6 +364,10 @@ writeback(APEX_CPU* cpu)
       printf("Write Back::MOV: %d\n",cpu->regs[stage->rd]);
     }
 
+    if (strcmp(stage->opcode, "ADD") == 0) {
+    cpu->regs[stage->rd]=stage->temp_add_result;
+    printf("The Output of add::%d\n",cpu->regs[stage->rd]);
+    }
 
 /* TODO (ashmeet#1#): TO Write Back ADD Instruction */
 
@@ -375,12 +392,53 @@ writeback(APEX_CPU* cpu)
 int
 APEX_cpu_run(APEX_CPU* cpu)
 {
-  while (1) {
+int quit_flag=0;
+int no_of_cycles;
+while (quit_flag!=1)
+{
+int ch;
+printf("Choose an option::\n");
+printf("1.Enter s for simulate\n");
+printf("2.Enter d for display\n");
+printf("3.Enter n for number of cycles upto which simulation will run\n");
+printf("4.Enter q to quit\n");
+scanf("%lc",&ch);
 
-    /* All the instructions committed, so exit */
+switch(ch)
+{
+    case 's': {
+    printf("----------SIMULATE---------\n");
+    //==================================================================================================
+    printf("Register File::\n");
+
+    for(int i= 0;i<16;i++)
+    {
+        printf("R[%d]:%d    status is valid or not: %d\n",i,cpu->regs[i],cpu->regs_valid[i]);
+    }
+    //==================================================================================================
+    printf("Data Memory::\n");
+
+    for(int i=0;i<100;i++)
+    {
+        printf("MEM[%d]:%d    ",i,cpu->data_memory[i]);
+    }
+
+    break;
+    //==================================================================================================
+    }
+
+
+    case 'd':{
+    printf("----------DISPLAY---------\n");
+    //==================================================================================================
+
+    //==================================================================================================
+    while (1) {
     if (cpu->ins_completed == cpu->code_memory_size) {
       printf("(apex) >> Simulation Complete");
       break;
+
+      //==================================================================================================
     }
 
     if (ENABLE_DEBUG_MESSAGES) {
@@ -390,14 +448,120 @@ APEX_cpu_run(APEX_CPU* cpu)
     }
 
     writeback(cpu);
-    //memory2(cpu);
+    memory2(cpu);
     memory1(cpu);
     execute2(cpu);
     execute1(cpu);
     decode(cpu);
     fetch(cpu);
     cpu->clock++;
-  }
+    }
+//==================================================================================================
+    printf("Register File::\n");
 
+    for(int i= 0;i<16;i++)
+    {
+        printf("R[%d]:%d    : %d\n",i,cpu->regs[i],cpu->regs_valid[i]);
+    }
+    //==================================================================================================
+    printf("Data Memory::\n");
+
+    for(int i=0;i<100;i++)
+    {
+        printf("MEM[%d]:    %d",i,cpu->data_memory[i]);
+    }
+
+    break;
+    //==================================================================================================
+
+    break;
+    }
+
+    case 'n':{
+    printf("----------SIMULATE TO NUMBER OF CYCLES---------\n");
+    printf("Enter the number of cycles::");
+    scanf("%d",&no_of_cycles);
+
+    //==================================================================================================
+
+    printf("Register File::\n");
+
+    for(int j= 0;j<16;j++)
+    {
+        printf("R[%d]:    %d    status is valid or not: %d\n",j,cpu->regs[j],cpu->regs_valid[j]);
+    }
+    //==================================================================================================
+    printf("Data Memory::\n");
+
+    for(int j=0;j<100;j++)
+    {
+        printf("MEM[%d]:    %d",j,cpu->data_memory[j]);
+    }
+    //==================================================================================================
+
+
+
+    for(int k=0;k<no_of_cycles;k++)
+    {
+      //==================================================================================================
+    if (cpu->ins_completed == cpu->code_memory_size) {
+      printf("(apex) >> Simulation Complete");
+        //break;
+
+      //==================================================================================================
+    }
+
+    if (ENABLE_DEBUG_MESSAGES) {
+      printf("--------------------------------\n");
+      printf("Clock Cycle #: %d\n", cpu->clock);
+      printf("--------------------------------\n");
+    }
+
+    writeback(cpu);
+    memory2(cpu);
+    memory1(cpu);
+    execute2(cpu);
+    execute1(cpu);
+    decode(cpu);
+    fetch(cpu);
+    cpu->clock++;
+    }
+
+    break;
+    //==================================================================================================
+    }
+
+    case 'q':{
+    quit_flag=1;
+
+    break;
+    //==================================================================================================
+    }
+
+ // while (1) {
+
+//    /* All the instructions committed, so exit */
+//   if (cpu->ins_completed == cpu->code_memory_size) {
+//      printf("(apex) >> Simulation Complete");
+//      break;
+//    }
+
+//    if (ENABLE_DEBUG_MESSAGES) {
+//      printf("--------------------------------\n");
+//      printf("Clock Cycle #: %d\n", cpu->clock);
+//      printf("--------------------------------\n");
+//    }
+
+//    writeback(cpu);
+//    memory2(cpu);
+//    memory1(cpu);
+//    execute2(cpu);
+//    execute1(cpu);
+//    decode(cpu);
+//    fetch(cpu);
+//    cpu->clock++;
+//  }
+  }
+}
   return 0;
 }
