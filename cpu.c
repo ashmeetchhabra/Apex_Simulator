@@ -190,6 +190,7 @@ decode(APEX_CPU* cpu)
     if (strcmp(stage->opcode, "MOVC") == 0) {
     //printf("Val of rd in decode stage:: %d \n",cpu->regs_valid[stage->rd]);
     //stage->buffer = cpu->regs[stage->imm];
+
     stage->buffer = stage->imm;
 
 
@@ -358,15 +359,19 @@ writeback(APEX_CPU* cpu)
     //cpu->regs[stage->rd] = stage->imm;
 
       cpu->regs[stage->rd] = stage->buffer;
+      cpu->regs_valid[stage->rd]=0;
+      //cpu->ins_completed++;
 
-      printf("BUFFER::%d \n",stage->buffer);
+//      printf("BUFFER::%d \n",stage->buffer);
 
-      printf("Write Back::MOV: %d\n",cpu->regs[stage->rd]);
+//      printf("Write Back::MOV: %d\n",cpu->regs[stage->rd]);
     }
 
     if (strcmp(stage->opcode, "ADD") == 0) {
     cpu->regs[stage->rd]=stage->temp_add_result;
-    printf("The Output of add::%d\n",cpu->regs[stage->rd]);
+    cpu->regs_valid[stage->rd]=0;
+     // cpu->ins_completed++;
+//    printf("The Output of add::%d\n",cpu->regs[stage->rd]);
     }
 
 /* TODO (ashmeet#1#): TO Write Back ADD Instruction */
@@ -411,9 +416,14 @@ switch(ch)
     //==================================================================================================
     printf("Register File::\n");
 
-    for(int i= 0;i<16;i++)
+         for(int i= 0;i<16;i++)
     {
-        printf("R[%d]:%d    status is valid or not: %d\n",i,cpu->regs[i],cpu->regs_valid[i]);
+        printf("|\tR[%d]\t|\tvalue %d \t|\tstatus= ",i,cpu->regs[i]);
+
+        if(cpu->regs_valid[i]==0)
+            printf("Valid\n");
+        else
+            printf("Invalid\n");
     }
     //==================================================================================================
     printf("Data Memory::\n");
@@ -435,7 +445,7 @@ switch(ch)
     //==================================================================================================
     while (1) {
     if (cpu->ins_completed == cpu->code_memory_size) {
-      printf("(apex) >> Simulation Complete");
+      printf("(apex) >> Simulation Complete\n");
       break;
 
       //==================================================================================================
@@ -459,9 +469,15 @@ switch(ch)
 //==================================================================================================
     printf("Register File::\n");
 
-    for(int i= 0;i<16;i++)
+
+        for(int i= 0;i<16;i++)
     {
-        printf("R[%d]:%d    : %d\n",i,cpu->regs[i],cpu->regs_valid[i]);
+        printf("|\tR[%d]\t|\tvalue %d \t|\tstatus= ",i,cpu->regs[i]);
+
+        if(cpu->regs_valid[i]==0)
+            printf("Valid\n");
+        else
+            printf("Invalid\n");
     }
     //==================================================================================================
     printf("Data Memory::\n");
@@ -471,6 +487,7 @@ switch(ch)
         printf("MEM[%d]:    %d",i,cpu->data_memory[i]);
     }
 
+    break;
     break;
     //==================================================================================================
 
@@ -486,9 +503,15 @@ switch(ch)
 
     printf("Register File::\n");
 
-    for(int j= 0;j<16;j++)
+
+      for(int i= 0;i<16;i++)
     {
-        printf("R[%d]:    %d    status is valid or not: %d\n",j,cpu->regs[j],cpu->regs_valid[j]);
+        printf("|\tR[%d]\t|\tvalue %d \t|\tstatus= ",i,cpu->regs[i]);
+
+        if(cpu->regs_valid[i]==0)
+            printf("Valid\n");
+        else
+            printf("Invalid\n");
     }
     //==================================================================================================
     printf("Data Memory::\n");
@@ -505,7 +528,7 @@ switch(ch)
     {
       //==================================================================================================
     if (cpu->ins_completed == cpu->code_memory_size) {
-      printf("(apex) >> Simulation Complete");
+      printf("(apex) >> Simulation Complete\n");
         //break;
 
       //==================================================================================================
