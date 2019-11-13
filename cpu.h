@@ -47,11 +47,16 @@ typedef struct CPU_Stage
   int busy;		    // Flag to indicate, stage is performing some action
   int stalled;		// Flag to indicate, stage is stalled
   int temp_add_result;  // to compute the result for add
+
+
 } CPU_Stage;
 
 /* Model of APEX CPU */
 typedef struct APEX_CPU
 {
+
+ int command_num;      // Flag to determine the command
+ int num_clockcycles_to_simulate; //num of clock cycles to simulate
   /* Clock cycles elasped */
   int clock;
 

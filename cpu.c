@@ -397,40 +397,41 @@ writeback(APEX_CPU* cpu)
 int
 APEX_cpu_run(APEX_CPU* cpu)
 {
-int quit_flag=0;
+//int quit_flag=0;
 int no_of_cycles;
-while (quit_flag!=1)
-{
-int ch;
-printf("Choose an option::\n");
-printf("1.Enter s for simulate\n");
-printf("2.Enter d for display\n");
-printf("3.Enter n for number of cycles upto which simulation will run\n");
-printf("4.Enter q to quit\n");
-scanf("%lc",&ch);
+//while (quit_flag!=1)
+//{
+int ch=cpu->command_num;
+//printf("Choose an option::\n");
+//printf("1.Enter s for simulate\n");
+//printf("2.Enter d for display\n");
+//printf("3.Enter n for number of cycles upto which simulation will run\n");
+//printf("4.Enter q to quit\n");
+//scanf("%lc",&ch);
 
 switch(ch)
 {
-    case 's': {
+    case 1: {
     printf("----------SIMULATE---------\n");
     //==================================================================================================
-    printf("Register File::\n");
+    printf("=============== STATE OF ARCHITECTURAL REGISTER FILE ==========\n");
 
          for(int i= 0;i<16;i++)
-    {
-        printf("|\tR[%d]\t|\tvalue %d \t|\tstatus= ",i,cpu->regs[i]);
+     {
+        printf("|\tR[%d]\t|\tValue %d \t|\tStatus= ",i,cpu->regs[i]);
 
         if(cpu->regs_valid[i]==0)
-            printf("Valid\n");
+            printf("Valid");
         else
-            printf("Invalid\n");
+            printf("Invalid");
+        printf("\t|\n");
     }
     //==================================================================================================
-    printf("Data Memory::\n");
+    printf("============== STATE OF DATA MEMORY =============\n");
 
     for(int i=0;i<100;i++)
     {
-        printf("MEM[%d]:%d    ",i,cpu->data_memory[i]);
+        printf("|\tMEM[%d]\t|\tData Value=%d\t|\n",i,cpu->data_memory[i]);
     }
 
     break;
@@ -438,7 +439,7 @@ switch(ch)
     }
 
 
-    case 'd':{
+    case 2:{
     printf("----------DISPLAY---------\n");
     //==================================================================================================
 
@@ -467,24 +468,25 @@ switch(ch)
     cpu->clock++;
     }
 //==================================================================================================
-    printf("Register File::\n");
+    printf("=============== STATE OF ARCHITECTURAL REGISTER FILE ==========\n");
 
 
         for(int i= 0;i<16;i++)
     {
-        printf("|\tR[%d]\t|\tvalue %d \t|\tstatus= ",i,cpu->regs[i]);
+        printf("|\tR[%d]\t|\tValue %d \t|\tStatus= ",i,cpu->regs[i]);
 
         if(cpu->regs_valid[i]==0)
-            printf("Valid\n");
+            printf("Valid");
         else
-            printf("Invalid\n");
+            printf("Invalid");
+        printf("\t|\n");
     }
     //==================================================================================================
-    printf("Data Memory::\n");
+    printf("============== STATE OF DATA MEMORY =============\n");
 
     for(int i=0;i<100;i++)
     {
-        printf("MEM[%d]:    %d",i,cpu->data_memory[i]);
+        printf("|\tMEM[%d]\t|\tData Value=%d\t|\n",i,cpu->data_memory[i]);
     }
 
     break;
@@ -494,31 +496,33 @@ switch(ch)
     break;
     }
 
-    case 'n':{
+    case 3:{
     printf("----------SIMULATE TO NUMBER OF CYCLES---------\n");
-    printf("Enter the number of cycles::");
-    scanf("%d",&no_of_cycles);
+    no_of_cycles=cpu->num_clockcycles_to_simulate;
+    //printf("Enter the number of cycles::");
+    //scanf("%d",&no_of_cycles);
 
     //==================================================================================================
 
-    printf("Register File::\n");
+    printf("=============== STATE OF ARCHITECTURAL REGISTER FILE ==========\n");
 
 
       for(int i= 0;i<16;i++)
-    {
-        printf("|\tR[%d]\t|\tvalue %d \t|\tstatus= ",i,cpu->regs[i]);
+     {
+        printf("|\tR[%d]\t|\tValue %d \t|\tStatus= ",i,cpu->regs[i]);
 
         if(cpu->regs_valid[i]==0)
-            printf("Valid\n");
+            printf("Valid");
         else
-            printf("Invalid\n");
+            printf("Invalid");
+        printf("\t|\n");
     }
     //==================================================================================================
-    printf("Data Memory::\n");
+    printf("============== STATE OF DATA MEMORY =============\n");
 
     for(int j=0;j<100;j++)
     {
-        printf("MEM[%d]:    %d",j,cpu->data_memory[j]);
+        printf("|\tMEM[%d]\t|\tData Value=%d\t|\n",j,cpu->data_memory[j]);
     }
     //==================================================================================================
 
@@ -554,12 +558,12 @@ switch(ch)
     //==================================================================================================
     }
 
-    case 'q':{
-    quit_flag=1;
+   // case 4:{
+    //quit_flag=1;
 
-    break;
+    //break;
     //==================================================================================================
-    }
+    //}
 
  // while (1) {
 
@@ -584,7 +588,7 @@ switch(ch)
 //    fetch(cpu);
 //    cpu->clock++;
 //  }
-  }
+  //}
 }
   return 0;
 }

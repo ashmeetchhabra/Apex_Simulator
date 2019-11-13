@@ -7,14 +7,16 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include<string.h>
 
 #include "cpu.h"
 
 int
 main(int argc, char const* argv[])
 {
-  if (argc != 2) {
-    fprintf(stderr, "APEX_Help : Usage %s <input_file>\n", argv[0]);
+printf("argc::%d\n",argc);
+  if (!(argc == 3 || argc == 4)) {
+    fprintf(stderr, "APEX_Help : Usage ./apex_sim <input_file> command no.OfCycles(optional)\n");
     exit(1);
   }
 
@@ -23,6 +25,39 @@ main(int argc, char const* argv[])
     fprintf(stderr, "APEX_Error : Unable to initialize CPU\n");
     exit(1);
   }
+
+  if(!(strcmp(argv[2],"display"))){
+  cpu->command_num=2; //2 for display
+  }
+
+  if(!(strcmp(argv[2],"simulate"))){
+  //printf("BEFORE::The 4th arg is::%d",atoi(argv[3]));
+
+  if(argc==4){
+
+  //i = atoi(s);
+
+
+  printf("The 4th arg is::%d",atoi(argv[3]));
+
+        cpu->num_clockcycles_to_simulate=atoi(argv[3]);
+
+
+    cpu->command_num=3; //3 for simulate for number of clock cycles
+
+
+  }
+   else{
+
+    cpu->command_num=1; //1 for simulate only
+    }
+
+
+
+
+
+  }
+
 
   APEX_cpu_run(cpu);
   APEX_cpu_stop(cpu);
