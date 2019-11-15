@@ -126,12 +126,12 @@ print_instruction(CPU_Stage* stage)
 
   if (strcmp(stage->opcode,"SUB")==0)
   {
-    printf("%s,R%d,R%d,#%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
+    printf("%s,R%d,R%d,R%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
   }
 
   if (strcmp(stage->opcode, "LOAD") == 0) {
     printf(
-      "%s,R%d,R%d,#%d ", stage->opcode, stage->rs1, stage->rs2, stage->imm);
+      "%s,R%d,R%d,#%d ", stage->opcode, stage->rd, stage->rs1, stage->imm);
   }
 
   if (strcmp(stage->opcode, "JUMP") == 0) {
@@ -145,7 +145,7 @@ print_instruction(CPU_Stage* stage)
   }
   if (strcmp(stage->opcode,"ADD")==0)
   {
-    printf("%s,R%d,R%d,#%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
+    printf("%s,R%d,R%d,R%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
   }
 
   if (strcmp(stage->opcode,"SUBL")==0)
@@ -155,28 +155,28 @@ print_instruction(CPU_Stage* stage)
 
   if (strcmp(stage->opcode,"LDR")==0)
   {
-    printf("%s,R%d,R%d,#%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
+    printf("%s,R%d,R%d,R%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
   }
 
   if (strcmp(stage->opcode,"STR")==0)
   {
-    printf("%s,R%d,R%d,#%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
+    printf("%s,R%d,R%d,R%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
   }
   if (strcmp(stage->opcode,"AND")==0)
   {
-    printf("%s,R%d,R%d,#%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
+    printf("%s,R%d,R%d,R%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
   }
   if (strcmp(stage->opcode,"OR")==0)
   {
-    printf("%s,R%d,R%d,#%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
+    printf("%s,R%d,R%d,R%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
   }
   if (strcmp(stage->opcode,"XOR")==0)
   {
-    printf("%s,R%d,R%d,#%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
+    printf("%s,R%d,R%d,R%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
   }
   if (strcmp(stage->opcode,"MUL")==0)
   {
-    printf("%s,R%d,R%d,#%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
+    printf("%s,R%d,R%d,R%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
   }
 
 
@@ -284,8 +284,8 @@ decode(APEX_CPU* cpu)
 
     if (strcmp(stage->opcode, "ADDL") == 0) {
     printf("Validity of rs1:: %d\n",cpu->regs_valid[stage->rs1]);
-    printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
-        if(cpu->regs_valid[stage->rs1] && cpu->regs_valid[stage->rs2]){
+    //printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
+        if(cpu->regs_valid[stage->rs1]){
         printf("::::::::::::::::::NOT In stalled::::::::::::::::");
         cpu->stage[F].stalled=0;
         cpu->stage[DRF].stalled=0;
@@ -297,23 +297,49 @@ decode(APEX_CPU* cpu)
         cpu->stage[F].stalled=1 ; //F stage needs to be stalled otherise it will take new instruction everytime.
         cpu->stage[DRF].stalled=1;
         cpu->clock_stalled_cycles++;
-        //cpu->clock_stalled_cycles=cpu->clock+cpu->clock_stalled_cycles;
-        //cpu->clock++;
-        //cpu->clock_stalled_cycles++;
-        //cpu->code_memory_size++;
-        //cpu->ins_completed++;
         }
 
     }
 
 
     if (strcmp(stage->opcode, "SUB") == 0) {
-    stage->rs1_value=stage->rs1;
-    stage->rs2_value=stage->rs2;
+    printf("Validity of rs1:: %d\n",cpu->regs_valid[stage->rs1]);
+    printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
+   if(cpu->regs_valid[stage->rs1] && cpu->regs_valid[stage->rs2]){
+        printf("::::::::::::::::::NOT In stalled::::::::::::::::");
+        cpu->stage[F].stalled=0;
+        cpu->stage[DRF].stalled=0;
+        stage->rs1_value=cpu->regs[stage->rs1];
+        stage->rs2_value=cpu->regs[stage->rs2];
+         cpu->regs_valid[stage->rd]=0;
+        }
+        else{
+        printf("::::::::::::::::::In stalled::::::::::::::::");
+        cpu->stage[F].stalled=1 ; //F stage needs to be stalled otherise it will take new instruction everytime.
+        cpu->stage[DRF].stalled=1;
+        cpu->clock_stalled_cycles++;
+        }
     }
 
     if (strcmp(stage->opcode, "LOAD") == 0) {
-    stage->rs1_value=stage->rs1;
+
+    printf("Validity of rs1:: %d\n",cpu->regs_valid[stage->rs1]);
+    //printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
+        if(cpu->regs_valid[stage->rs1]){
+        printf("::::::::::::::::::NOT In stalled::::::::::::::::");
+        cpu->stage[F].stalled=0;
+        cpu->stage[DRF].stalled=0;
+        stage->rs1_value=cpu->regs[stage->rs1];
+         cpu->regs_valid[stage->rd]=0;
+        }
+        else{
+        printf("::::::::::::::::::In stalled::::::::::::::::");
+        cpu->stage[F].stalled=1 ; //F stage needs to be stalled otherise it will take new instruction everytime.
+        cpu->stage[DRF].stalled=1;
+        cpu->clock_stalled_cycles++;
+        }
+
+    //stage->rs1_value=stage->rs1;
     //printf("DRF::Val of rs1 in load::%d\n",stage->rs1);
     }
 
@@ -322,14 +348,32 @@ decode(APEX_CPU* cpu)
 
     }
     if (strcmp(stage->opcode, "ADD") == 0) {
-    stage->rs1_value=stage->rs1;
-    stage->rs2_value=stage->rs2;
+
+    printf("Validity of rs1:: %d\n",cpu->regs_valid[stage->rs1]);
+    printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
+   if(cpu->regs_valid[stage->rs1] && cpu->regs_valid[stage->rs2]){
+        printf("::::::::::::::::::NOT In stalled::::::::::::::::");
+        cpu->stage[F].stalled=0;
+        cpu->stage[DRF].stalled=0;
+        stage->rs1_value=cpu->regs[stage->rs1];
+        stage->rs2_value=cpu->regs[stage->rs2];
+         cpu->regs_valid[stage->rd]=0;
+        }
+        else{
+        printf("::::::::::::::::::In stalled::::::::::::::::");
+        cpu->stage[F].stalled=1 ; //F stage needs to be stalled otherise it will take new instruction everytime.
+        cpu->stage[DRF].stalled=1;
+        cpu->clock_stalled_cycles++;
+        }
+
+  //  stage->rs1_value=stage->rs1;
+  //  stage->rs2_value=stage->rs2;
     }
 
     if (strcmp(stage->opcode, "SUBL") == 0) {
-    printf("Validity of rs1:: %d\n",cpu->regs_valid[stage->rs1]);
-    printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
-        if(cpu->regs_valid[stage->rs1] && cpu->regs_valid[stage->rs2]){
+  printf("Validity of rs1:: %d\n",cpu->regs_valid[stage->rs1]);
+    //printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
+        if(cpu->regs_valid[stage->rs1]){
         printf("::::::::::::::::::NOT In stalled::::::::::::::::");
         cpu->stage[F].stalled=0;
         cpu->stage[DRF].stalled=0;
@@ -341,40 +385,144 @@ decode(APEX_CPU* cpu)
         cpu->stage[F].stalled=1 ; //F stage needs to be stalled otherise it will take new instruction everytime.
         cpu->stage[DRF].stalled=1;
         cpu->clock_stalled_cycles++;
-        //cpu->clock_stalled_cycles=cpu->clock+cpu->clock_stalled_cycles;
-        //cpu->clock++;
-        //cpu->clock_stalled_cycles++;
-        //cpu->code_memory_size++;
-        //cpu->ins_completed++;
         }
 
     }
 
     if (strcmp(stage->opcode, "LDR") == 0) {
-    stage->rs1_value=stage->rs1;
-    stage->rs2_value=stage->rs2;
+
+    printf("Validity of rs1:: %d\n",cpu->regs_valid[stage->rs1]);
+    printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
+   if(cpu->regs_valid[stage->rs1] && cpu->regs_valid[stage->rs2]){
+        printf("::::::::::::::::::NOT In stalled::::::::::::::::");
+        cpu->stage[F].stalled=0;
+        cpu->stage[DRF].stalled=0;
+        stage->rs1_value=cpu->regs[stage->rs1];
+        stage->rs2_value=cpu->regs[stage->rs2];
+         cpu->regs_valid[stage->rd]=0;
+        }
+        else{
+        printf("::::::::::::::::::In stalled::::::::::::::::");
+        cpu->stage[F].stalled=1 ; //F stage needs to be stalled otherise it will take new instruction everytime.
+        cpu->stage[DRF].stalled=1;
+        cpu->clock_stalled_cycles++;
+        }
+
+    //stage->rs1_value=stage->rs1;
+    //stage->rs2_value=stage->rs2;
     }
 
     if (strcmp(stage->opcode, "STR") == 0) {
-    stage->rs1_value=stage->rs1;
-    stage->rs2_value=stage->rd;
+
+    printf("Validity of rs1:: %d\n",cpu->regs_valid[stage->rs1]);
+    printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
+   if(cpu->regs_valid[stage->rs1] && cpu->regs_valid[stage->rs2]){
+        printf("::::::::::::::::::NOT In stalled::::::::::::::::");
+        cpu->stage[F].stalled=0;
+        cpu->stage[DRF].stalled=0;
+        stage->rs1_value=cpu->regs[stage->rs1];
+        stage->rs2_value=cpu->regs[stage->rs2];
+         //cpu->regs_valid[stage->rd]=0;
+        }
+        else{
+        printf("::::::::::::::::::In stalled::::::::::::::::");
+        cpu->stage[F].stalled=1 ; //F stage needs to be stalled otherise it will take new instruction everytime.
+        cpu->stage[DRF].stalled=1;
+        cpu->clock_stalled_cycles++;
+        }
+
+ //   stage->rs1_value=stage->rs1;
+ //   stage->rs2_value=stage->rd;
     }
 
     if (strcmp(stage->opcode, "AND") == 0) {
-    stage->rs1_value=stage->rs1;
-    stage->rs2_value=stage->rd;
+
+    printf("Validity of rs1:: %d\n",cpu->regs_valid[stage->rs1]);
+    printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
+   if(cpu->regs_valid[stage->rs1] && cpu->regs_valid[stage->rs2]){
+        printf("::::::::::::::::::NOT In stalled::::::::::::::::");
+        cpu->stage[F].stalled=0;
+        cpu->stage[DRF].stalled=0;
+        stage->rs1_value=cpu->regs[stage->rs1];
+        stage->rs2_value=cpu->regs[stage->rs2];
+         cpu->regs_valid[stage->rd]=0;
+        }
+        else{
+        printf("::::::::::::::::::In stalled::::::::::::::::");
+        cpu->stage[F].stalled=1 ; //F stage needs to be stalled otherise it will take new instruction everytime.
+        cpu->stage[DRF].stalled=1;
+        cpu->clock_stalled_cycles++;
+        }
+
+   // stage->rs1_value=stage->rs1;
+   // stage->rs2_value=stage->rd;
     }
     if (strcmp(stage->opcode, "OR") == 0) {
-    stage->rs1_value=stage->rs1;
-    stage->rs2_value=stage->rd;
+
+
+     printf("Validity of rs1:: %d\n",cpu->regs_valid[stage->rs1]);
+    printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
+   if(cpu->regs_valid[stage->rs1] && cpu->regs_valid[stage->rs2]){
+        printf("::::::::::::::::::NOT In stalled::::::::::::::::");
+        cpu->stage[F].stalled=0;
+        cpu->stage[DRF].stalled=0;
+        stage->rs1_value=cpu->regs[stage->rs1];
+        stage->rs2_value=cpu->regs[stage->rs2];
+         cpu->regs_valid[stage->rd]=0;
+        }
+        else{
+        printf("::::::::::::::::::In stalled::::::::::::::::");
+        cpu->stage[F].stalled=1 ; //F stage needs to be stalled otherise it will take new instruction everytime.
+        cpu->stage[DRF].stalled=1;
+        cpu->clock_stalled_cycles++;
+        }
+
+    //stage->rs1_value=stage->rs1;
+    //stage->rs2_value=stage->rd;
     }
     if (strcmp(stage->opcode, "XOR") == 0) {
-    stage->rs1_value=stage->rs1;
-    stage->rs2_value=stage->rd;
+
+     printf("Validity of rs1:: %d\n",cpu->regs_valid[stage->rs1]);
+    printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
+   if(cpu->regs_valid[stage->rs1] && cpu->regs_valid[stage->rs2]){
+        printf("::::::::::::::::::NOT In stalled::::::::::::::::");
+        cpu->stage[F].stalled=0;
+        cpu->stage[DRF].stalled=0;
+        stage->rs1_value=cpu->regs[stage->rs1];
+        stage->rs2_value=cpu->regs[stage->rs2];
+         cpu->regs_valid[stage->rd]=0;
+        }
+        else{
+        printf("::::::::::::::::::In stalled::::::::::::::::");
+        cpu->stage[F].stalled=1 ; //F stage needs to be stalled otherise it will take new instruction everytime.
+        cpu->stage[DRF].stalled=1;
+        cpu->clock_stalled_cycles++;
+        }
+
+   // stage->rs1_value=stage->rs1;
+   // stage->rs2_value=stage->rd;
     }
     if (strcmp(stage->opcode, "MUL") == 0) {
-    stage->rs1_value=stage->rs1;
-    stage->rs2_value=stage->rd;
+
+     printf("Validity of rs1:: %d\n",cpu->regs_valid[stage->rs1]);
+    printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
+   if(cpu->regs_valid[stage->rs1] && cpu->regs_valid[stage->rs2]){
+        printf("::::::::::::::::::NOT In stalled::::::::::::::::");
+        cpu->stage[F].stalled=0;
+        cpu->stage[DRF].stalled=0;
+        stage->rs1_value=cpu->regs[stage->rs1];
+        stage->rs2_value=cpu->regs[stage->rs2];
+         cpu->regs_valid[stage->rd]=0;
+        }
+        else{
+        printf("::::::::::::::::::In stalled::::::::::::::::");
+        cpu->stage[F].stalled=1 ; //F stage needs to be stalled otherise it will take new instruction everytime.
+        cpu->stage[DRF].stalled=1;
+        cpu->clock_stalled_cycles++;
+        }
+
+   // stage->rs1_value=stage->rs1;
+   // stage->rs2_value=stage->rd;
     }
 
 
@@ -444,6 +592,16 @@ execute1(APEX_CPU* cpu)
       print_stage_content("Execute1", stage);
     }
   }
+  else{
+  strcpy(stage->opcode,"NO-OP");
+  cpu->stage[EX2] = cpu->stage[EX1];
+
+  if (ENABLE_DEBUG_MESSAGES) {
+      print_stage_content("Execute1", stage);
+    }
+
+
+  }
   return 0;
 }
 
@@ -510,6 +668,15 @@ execute2(APEX_CPU* cpu)
             print_stage_content("Execute2", stage);
         }
     }
+    else{
+    strcpy(stage->opcode,"NO-OP");
+
+    cpu->stage[MEM1] = cpu->stage[EX2];
+        if (ENABLE_DEBUG_MESSAGES) {
+            print_stage_content("Execute2", stage);
+        }
+
+    }
     return 0;
 }
 
@@ -565,6 +732,15 @@ memory1(APEX_CPU* cpu)
 
 
     if (ENABLE_DEBUG_MESSAGES) {
+
+      print_stage_content("Memory1", stage);
+
+    }
+  }
+  else{
+  strcpy(stage->opcode,"NO-OP");
+  cpu->stage[MEM2] = cpu->stage[MEM1];
+  if (ENABLE_DEBUG_MESSAGES) {
 
       print_stage_content("Memory1", stage);
 
@@ -627,6 +803,14 @@ memory2(APEX_CPU* cpu)
     }
 
 
+
+    }
+    else{
+    strcpy(stage->opcode,"NO-OP");
+    cpu->stage[WB] = cpu->stage[MEM2];
+        if (ENABLE_DEBUG_MESSAGES) {
+            print_stage_content("Memory2", stage);
+    }
 
     }
     return 0;
@@ -709,17 +893,21 @@ writeback(APEX_CPU* cpu)
     cpu->regs[stage->rd]=stage->temp_result;
     cpu->regs_valid[stage->rd]=1;
     }
-
-
-
-
-
-
     cpu->ins_completed++;
 
     if (ENABLE_DEBUG_MESSAGES) {
       print_stage_content("Writeback", stage);
     }
+  }
+  else{
+  strcpy(stage->opcode,"NO-OP");
+
+   if (ENABLE_DEBUG_MESSAGES) {
+      print_stage_content("Writeback", stage);
+    }
+
+
+
   }
   return 0;
 }
@@ -756,7 +944,7 @@ switch(ch)
      {
         printf("|\tR[%d]\t|\tValue %d \t|\tStatus= ",i,cpu->regs[i]);
 
-        if(cpu->regs_valid[i]==0)
+        if(cpu->regs_valid[i]==1)
             printf("Valid");
         else
             printf("Invalid");
