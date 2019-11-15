@@ -195,6 +195,12 @@ int
 decode(APEX_CPU* cpu)
 {
   CPU_Stage* stage = &cpu->stage[DRF];
+
+  printf("THe valu of stage->stalled::%d\n",stage->stalled);
+  if(stage->stalled) {
+    stage->stalled = 0;
+  }
+
   if (!stage->busy && !stage->stalled) {
 
     /* Read data from register file for store */
@@ -215,18 +221,21 @@ decode(APEX_CPU* cpu)
     }
 
     if (strcmp(stage->opcode, "ADDL") == 0) {
+    printf("Validity of rs1:: %d\n",cpu->regs_valid[stage->rs1]);
+    printf("Validity of rs2:: %d\n",cpu->regs_valid[stage->rs2]);
         if(cpu->regs_valid[stage->rs1] && cpu->regs_valid[stage->rs2]){
-        //printf("::::::::::::::::::NOT In stalled::::::::::::::::");
-        //cpu->stage[F].stalled=0;
-        //cpu->stage[DRF].stalled=0;
+        printf("::::::::::::::::::NOT In stalled::::::::::::::::");
+        cpu->stage[F].stalled=0;
+        cpu->stage[DRF].stalled=0;
         stage->rs1_value=cpu->regs[stage->rs1];
-        //cpu->regs_valid[stage->rd]=0;
+         cpu->regs_valid[stage->rd]=0;
         }
-       // else{
-        //printf("::::::::::::::::::In stalled::::::::::::::::");
-        //cpu->stage[F].stalled=1;
-        //cpu->stage[DRF].stalled=1;
-        //}
+        else{
+        printf("::::::::::::::::::In stalled::::::::::::::::");
+        cpu->stage[F].stalled=1;
+        cpu->stage[DRF].stalled=1;
+        cpu->clock++;
+        }
 
     }
 
@@ -442,7 +451,8 @@ writeback(APEX_CPU* cpu)
 
     if (strcmp(stage->opcode, "ADDL") == 0) {
     cpu->regs[stage->rd]=stage->temp_result;
-    cpu->regs_valid[stage->rd]=0;
+    cpu->regs_valid[stage->rd]=1;
+
     }
 
     if (strcmp(stage->opcode, "SUB") == 0) {
@@ -611,7 +621,7 @@ switch(ch)
     for(int k=0;k<no_of_cycles;k++)
     {
       //==================================================================================================
-    if (cpu->ins_completed == cpu->code_memory_size) {
+    if (cpu->ins_completed == cpu->code_memory_size ) {
       printf("(apex) >> Simulation Complete\n");
         //break;
 
@@ -633,6 +643,30 @@ switch(ch)
     fetch(cpu);
     cpu->clock++;
     }
+
+    //==================================================================================================
+
+    printf("=============== STATE OF ARCHITECTURAL REGISTER FILE AFTER SIMULATE==========\n");
+
+
+      for(int i= 0;i<16;i++)
+     {
+        printf("|\tR[%d]\t|\tValue %d \t|\tStatus= ",i,cpu->regs[i]);
+
+        if(cpu->regs_valid[i]==0)
+            printf("Valid");
+        else
+            printf("Invalid");
+        printf("\t|\n");
+    }
+    //==================================================================================================
+    printf("============== STATE OF DATA MEMORY AFTER SIMULATE=============\n");
+
+    for(int j=0;j<100;j++)
+    {
+        printf("|\tMEM[%d]\t|\tData Value=%d\t|\n",j,cpu->data_memory[j]);
+    }
+    //==================================================================================================
 
     break;
     //==================================================================================================
