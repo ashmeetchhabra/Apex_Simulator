@@ -61,12 +61,32 @@ create_APEX_instruction(APEX_Instruction* ins, char* buffer)
     ins->imm = get_num_from_string(tokens[3]);
   }
 
-  if(strcmp(ins->opcode, "ADD")==0)
+  if(strcmp(ins->opcode, "ADDL")==0)
   {
     ins->rs1=get_num_from_string(tokens[2]);
     ins->imm = get_num_from_string(tokens[3]);
     ins->rd= get_num_from_string(tokens[1]);
   }
+
+  if(strcmp(ins->opcode, "SUB")==0)
+  {
+    ins->rs1=get_num_from_string(tokens[2]);
+    ins->rs2 = get_num_from_string(tokens[3]);
+    ins->rd= get_num_from_string(tokens[1]);
+  }
+
+  if(strcmp(ins->opcode, "LOAD")==0){
+  ins->rd= get_num_from_string(tokens[1]);
+    ins->rs1=get_num_from_string(tokens[2]);
+    ins->imm = get_num_from_string(tokens[3]);
+  }
+
+  if(strcmp(ins->opcode, "JUMP")==0){
+  ins->rs1=get_num_from_string(tokens[1]);
+  ins->imm = get_num_from_string(tokens[2]);
+  }
+
+
 
 }
 

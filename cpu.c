@@ -110,10 +110,25 @@ print_instruction(CPU_Stage* stage)
     printf("%s,R%d,#%d ", stage->opcode, stage->rd, stage->imm);
   }
 
-  if (strcmp(stage->opcode,"ADD")==0)
+  if (strcmp(stage->opcode,"ADDL")==0)
   {
     //printf("ADDED");
     printf("%s,R%d,R%d,#%d",stage->opcode, stage->rd, stage->rs1, stage->imm);
+  }
+
+  if (strcmp(stage->opcode,"SUB")==0)
+  {
+    printf("%s,R%d,R%d,#%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
+  }
+
+  if (strcmp(stage->opcode, "LOAD") == 0) {
+    printf(
+      "%s,R%d,R%d,#%d ", stage->opcode, stage->rs1, stage->rs2, stage->imm);
+  }
+
+  if (strcmp(stage->opcode, "JUMP") == 0) {
+    printf(
+      "%s,R%d,#%d ", stage->opcode, stage->rs1, stage->imm);
   }
 }
 
@@ -184,6 +199,8 @@ decode(APEX_CPU* cpu)
 
     /* Read data from register file for store */
     if (strcmp(stage->opcode, "STORE") == 0) {
+    stage->rs1_value=stage->rs1;
+    stage->rs2_value=stage->rs2;
     }
 
     /* No Register file read needed for MOVC */
@@ -197,20 +214,37 @@ decode(APEX_CPU* cpu)
     //cpu->regs_valid[stage->rd] = 1;
     }
 
-    if (strcmp(stage->opcode, "ADD") == 0) {
-//    printf("In decode stage:: ADD:: \n");
-//    printf("Literal:: %d \n",stage->imm);
-//    printf("rd:: %d \n",stage->rd);
-//    printf("rs1:: %d \n",stage->rs1);
-//    printf("rs2:: %d \n",stage->rs2);
-//    printf("rs1_value:: %d \n",stage->rs1_value);
-//    printf("rs2_value:: %d \n",stage->rs2_value);
-
+    if (strcmp(stage->opcode, "ADDL") == 0) {
+        if(cpu->regs_valid[stage->rs1] && cpu->regs_valid[stage->rs2]){
+        //printf("::::::::::::::::::NOT In stalled::::::::::::::::");
+        //cpu->stage[F].stalled=0;
+        //cpu->stage[DRF].stalled=0;
+        stage->rs1_value=cpu->regs[stage->rs1];
+        //cpu->regs_valid[stage->rd]=0;
+        }
+       // else{
+        //printf("::::::::::::::::::In stalled::::::::::::::::");
+        //cpu->stage[F].stalled=1;
+        //cpu->stage[DRF].stalled=1;
+        //}
 
     }
 
-// TODO (ashmeet#1#): TO Decode Add Instruction
 
+    if (strcmp(stage->opcode, "SUB") == 0) {
+    stage->rs1_value=stage->rs1;
+    stage->rs2_value=stage->rs2;
+    }
+
+    if (strcmp(stage->opcode, "LOAD") == 0) {
+    stage->rs1_value=stage->rs1;
+    //printf("DRF::Val of rs1 in load::%d\n",stage->rs1);
+    }
+
+    if (strcmp(stage->opcode, "JUMP") == 0) {
+        stage->rs1_value= cpu->regs[stage->rs1];
+
+    }
 
 
     /* Copy data from decode latch to execute latch*/
@@ -243,15 +277,12 @@ execute1(APEX_CPU* cpu)
     if (strcmp(stage->opcode, "MOVC") == 0) {
     }
 
-    if (strcmp(stage->opcode, "ADD") == 0) {
-
-
+    if (strcmp(stage->opcode, "ADDL") == 0) {
     }
-
-
-/* TODO (ashmeet#1#): To Execute ADD Instruction
- */
-
+    if (strcmp(stage->opcode, "SUB") == 0) {
+    }
+    if (strcmp(stage->opcode, "LOAD") == 0) {
+    }
 
     /* Copy data from Execute latch to Memory latch*/
     cpu->stage[EX2] = cpu->stage[EX1];
@@ -268,9 +299,30 @@ execute2(APEX_CPU* cpu)
 {
     CPU_Stage* stage = &cpu->stage[EX2];
     if (!stage->busy && !stage->stalled) {
-    if (strcmp(stage->opcode, "ADD") == 0) {
 
-    stage->temp_add_result=(stage->rs1+stage->imm);
+    if (strcmp(stage->opcode, "MOVC") == 0) {
+    }
+    if (strcmp(stage->opcode, "STORE") == 0) {
+    stage->mem_address=stage->rs2_value+stage->imm;
+    }
+
+    if (strcmp(stage->opcode, "ADDL") == 0) {
+
+    stage->temp_result=(stage->rs1_value+stage->imm);
+
+    }
+
+    if (strcmp(stage->opcode, "SUB") == 0) {
+
+    //printf("The value of rs1 is::%d\n",stage->rs1_value);
+    //printf("The value of rs2 is::%d\n",stage->rs2_value);
+    stage->temp_result=(stage->rs1_value-stage->rs2_value);
+    //printf("The value of test_resukt in SUB is::%d\n",stage->temp_result);
+    }
+
+    if (strcmp(stage->opcode, "LOAD") == 0) {
+    stage->mem_address=stage->rs1_value+stage->imm;
+    printf("EX2::Val of address in load::%d\n",stage->mem_address);
     }
         cpu->stage[MEM1] = cpu->stage[EX2];
         if (ENABLE_DEBUG_MESSAGES) {
@@ -302,7 +354,13 @@ memory1(APEX_CPU* cpu)
     if (strcmp(stage->opcode, "MOVC") == 0) {
     }
 
-    if (strcmp(stage->opcode, "ADD") == 0) {
+    if (strcmp(stage->opcode, "ADDL") == 0) {
+    }
+
+     if (strcmp(stage->opcode, "SUB") == 0) {
+    }
+
+    if (strcmp(stage->opcode, "LOAD") == 0) {
     }
 
     /* Copy data from decode latch to execute latch*/
@@ -325,18 +383,30 @@ memory2(APEX_CPU* cpu)
   if (!stage->busy && !stage->stalled) {
 
   if (strcmp(stage->opcode, "STORE") == 0) {
+  cpu->data_memory[stage->mem_address]=stage->rs1_value;
+
+
     }
 
     /* MOVC */
     if (strcmp(stage->opcode, "MOVC") == 0) {
     }
 
-    if (strcmp(stage->opcode, "ADD") == 0) {
+    if (strcmp(stage->opcode, "ADDL") == 0) {
+    }
+
+    if (strcmp(stage->opcode, "SUB") == 0) {
+    }
+    if (strcmp(stage->opcode, "LOAD") == 0) {
+    stage->buffer=cpu->data_memory[stage->mem_address];
     }
         cpu->stage[WB] = cpu->stage[MEM2];
         if (ENABLE_DEBUG_MESSAGES) {
             print_stage_content("Memory2", stage);
-        }
+    }
+
+
+
     }
     return 0;
 }
@@ -367,14 +437,24 @@ writeback(APEX_CPU* cpu)
 //      printf("Write Back::MOV: %d\n",cpu->regs[stage->rd]);
     }
 
-    if (strcmp(stage->opcode, "ADD") == 0) {
-    cpu->regs[stage->rd]=stage->temp_add_result;
-    cpu->regs_valid[stage->rd]=0;
-     // cpu->ins_completed++;
-//    printf("The Output of add::%d\n",cpu->regs[stage->rd]);
+    if (strcmp(stage->opcode, "STORE") == 0) {
     }
 
-/* TODO (ashmeet#1#): TO Write Back ADD Instruction */
+    if (strcmp(stage->opcode, "ADDL") == 0) {
+    cpu->regs[stage->rd]=stage->temp_result;
+    cpu->regs_valid[stage->rd]=0;
+    }
+
+    if (strcmp(stage->opcode, "SUB") == 0) {
+    cpu->regs[stage->rd]=stage->temp_result;
+    cpu->regs_valid[stage->rd]=0;
+    }
+
+    if (strcmp(stage->opcode, "LOAD") == 0) {
+    cpu->regs[stage->rd]=stage->buffer;
+    printf("WB::Val of buffer in load::%d\n",stage->buffer);
+    cpu->regs_valid[stage->rd]=0;
+    }
 
 
 

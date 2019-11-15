@@ -46,7 +46,7 @@ typedef struct CPU_Stage
   int mem_address;	// Computed Memory Address
   int busy;		    // Flag to indicate, stage is performing some action
   int stalled;		// Flag to indicate, stage is stalled
-  int temp_add_result;  // to compute the result for add
+  int temp_result;  // to compute the result for add
 
 
 } CPU_Stage;
