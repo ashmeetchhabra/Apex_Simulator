@@ -40,7 +40,7 @@ printf("argc::%d\n",argc);
 
   printf("The 4th arg is::%d",atoi(argv[3]));
 
-        cpu->num_clockcycles_to_simulate=atoi(argv[3]);
+        cpu->num_clockcycles_to_simulate=atoi(argv[3]);//atoi converts string to integer
 
 
     cpu->command_num=3; //3 for simulate for number of clock cycles

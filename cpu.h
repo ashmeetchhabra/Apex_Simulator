@@ -59,6 +59,7 @@ typedef struct APEX_CPU
  int num_clockcycles_to_simulate; //num of clock cycles to simulate
   /* Clock cycles elasped */
   int clock;
+  int clock_stalled_cycles;
 
   /* Current program counter */
   int pc;

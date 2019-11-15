@@ -70,6 +70,14 @@ APEX_cpu_init(const char* filename)
     cpu->stage[i].busy = 1;
   }
 
+  //Compute the value of a flag:: clock_stalled_cycles
+  //cpu->clock_stalled_cycles=NUM_STAGES+(1*(cpu->code_memory_size-1)); // compute the value of clock cycles
+
+  // after that add when stalled
+  // then check if clock executed(cpu->clck) and stalled flag(cpu->clock_stalled_cycles): if equl then simulate will work further
+
+
+
   return cpu;
 }
 
@@ -130,6 +138,11 @@ print_instruction(CPU_Stage* stage)
     printf(
       "%s,R%d,#%d ", stage->opcode, stage->rs1, stage->imm);
   }
+
+  if (strcmp(stage->opcode, "NO-OP") == 0) {
+    printf(
+      "%s ", stage->opcode);
+  }
 }
 
 /* Debug function which dumps the cpu stage
@@ -182,6 +195,16 @@ fetch(APEX_CPU* cpu)
       print_stage_content("Fetch", stage);
     }
   }
+  else{
+
+  //printf("..................In else part of fetch..................\n");
+ // strcpy(cpu->stage[F].opcode,"NO-OP");
+  strcpy(stage->opcode,"NO-OP");
+  if (ENABLE_DEBUG_MESSAGES) {
+      print_stage_content("Fetch", stage);
+    }
+
+  }
   return 0;
 }
 
@@ -196,9 +219,11 @@ decode(APEX_CPU* cpu)
 {
   CPU_Stage* stage = &cpu->stage[DRF];
 
-  printf("THe valu of stage->stalled::%d\n",stage->stalled);
+  //printf("THe valu of stage->stalled::%d\n",stage->stalled);
   if(stage->stalled) {
     stage->stalled = 0;
+    //strcpy(cpu->stage[F].opcode, "NO-OP");
+    //printf("Opcode on fetch stage is::%s\n",cpu->stage[F].opcode);
   }
 
   if (!stage->busy && !stage->stalled) {
@@ -232,9 +257,14 @@ decode(APEX_CPU* cpu)
         }
         else{
         printf("::::::::::::::::::In stalled::::::::::::::::");
-        cpu->stage[F].stalled=1;
+        cpu->stage[F].stalled=1 ; //F stage needs to be stalled otherise it will take new instruction everytime.
         cpu->stage[DRF].stalled=1;
-        cpu->clock++;
+        cpu->clock_stalled_cycles++;
+        //cpu->clock_stalled_cycles=cpu->clock+cpu->clock_stalled_cycles;
+        //cpu->clock++;
+        //cpu->clock_stalled_cycles++;
+        //cpu->code_memory_size++;
+        //cpu->ins_completed++;
         }
 
     }
@@ -535,9 +565,54 @@ switch(ch)
 
     //==================================================================================================
     while (1) {
+    //for(int k=0;k<(cpu->clock+cpu->clock_stalled_cycles);k++){
+
     if (cpu->ins_completed == cpu->code_memory_size) {
+      //printf("No. of clock cycles:: %d\n",cpu->clock);
+      //printf("cpu->code_memory_size:: %d\n",cpu->code_memory_size);
+      //printf("cpu->ins_completed:: %d\n",cpu->ins_completed);
+        //printf("Stalled cycles::%d\n",cpu->clock_stalled_cycles);
+
+
+
+        //if(cpu->clock_stalled_cycles==0)
+        //{
+        //printf("(apex) >> Simulation Complete\n");
+        //break;
+        //}
+        //else
+        //cpu->clock_stalled_cycles--;
+
+
+
+        for(int k = 0 ; k<cpu->clock_stalled_cycles;k++){
+         if (ENABLE_DEBUG_MESSAGES) {
+      printf("--------------------------------\n");
+      printf("Clock Cycle #: %d\n", cpu->clock);
+      printf("--------------------------------\n");
+    }
+
+    writeback(cpu);
+    memory2(cpu);
+    memory1(cpu);
+    execute2(cpu);
+    execute1(cpu);
+    decode(cpu);
+    fetch(cpu);
+    cpu->clock++;
+        }
+
+
+   // printf("Stalled cycles::%d\n",cpu->clock_stalled_cycles);
+
+
+
       printf("(apex) >> Simulation Complete\n");
+      //printf("No. of clock cycles:: %d\n",cpu->clock);
+      //printf("cpu->code_memory_size:: %d\n",cpu->code_memory_size);
+      //printf("cpu->ins_completed:: %d\n",cpu->ins_completed);
       break;
+
 
       //==================================================================================================
     }
