@@ -179,6 +179,11 @@ print_instruction(CPU_Stage* stage)
     printf("%s,R%d,R%d,R%d",stage->opcode, stage->rd, stage->rs1, stage->rs2);
   }
 
+  if (strcmp(stage->opcode,"BZ")==0)
+  {
+    printf("%s,#%d",stage->opcode, stage->imm);
+  }
+
 
 }
 
@@ -521,12 +526,13 @@ decode(APEX_CPU* cpu)
         cpu->clock_stalled_cycles++;
         }
 
-   // stage->rs1_value=stage->rs1;
-   // stage->rs2_value=stage->rd;
+
+
     }
 
 
-
+if (strcmp(stage->opcode, "BZ") == 0) {
+}
 
 
 
@@ -649,18 +655,43 @@ execute2(APEX_CPU* cpu)
     stage->mem_address=stage->rs2_value+stage->rs1_value;
     }
     if (strcmp(stage->opcode, "AND") == 0) {
-    stage->temp_result=(stage->rs1_value+stage->rs2_value);
+    stage->temp_result=(stage->rs1_value&stage->rs2_value);
     }
     if (strcmp(stage->opcode, "OR") == 0) {
-    stage->temp_result=(stage->rs1_value+stage->rs2_value);
+    stage->temp_result=(stage->rs1_value|stage->rs2_value);
     }
     if (strcmp(stage->opcode, "XOR") == 0) {
-    stage->temp_result=(stage->rs1_value+stage->rs2_value);
+    stage->temp_result=(stage->rs1_value^stage->rs2_value);
     }
     if (strcmp(stage->opcode, "MUL") == 0) {
-    stage->temp_result=(stage->rs1_value+stage->rs2_value);
+    stage->temp_result=(stage->rs1_value*stage->rs2_value);
     }
 
+    if (strcmp(stage->opcode, "BZ") == 0) {
+     if(strcmp(cpu->stage[MEM1].opcode,"ADD") || strcmp(cpu->stage[MEM1].opcode,"SUB")|| strcmp(cpu->stage[MEM1].opcode,"MUL")){
+     cpu->stage->stalled=1;
+     printf("stage[WB].opcode::%s\n",cpu->stage[WB].opcode);
+     printf("stage[MEM1].opcode::%s\n",cpu->stage[MEM1].opcode);
+     printf("stage[WB].rd::%d\n",cpu->stage[WB].rd);
+     printf("stage[MEM1].rd::%d\n",cpu->stage[MEM1].rd);
+       if(cpu->stage[MEM1].rd==0){
+       //TODO: BZ,BNZ,JUMP,HALT
+
+       //Not executed this if because rd will be written in WB stage so there has to be 1 clock cycle stall.
+
+
+        printf("Zero flag set:::: zero=1");
+        cpu->zero=1;
+        }
+        else{
+        cpu->zero=0;
+        printf("Zero flag is not set::: zero=0");
+
+        }
+
+     }
+
+    }
 
 
         cpu->stage[MEM1] = cpu->stage[EX2];

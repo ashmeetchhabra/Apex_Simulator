@@ -60,6 +60,7 @@ typedef struct APEX_CPU
   /* Clock cycles elasped */
   int clock;
   int clock_stalled_cycles;
+  int zero;    //flag required by control instructions
 
   /* Current program counter */
   int pc;
